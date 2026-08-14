@@ -1,0 +1,100 @@
+
+
+--------------------------------------------------------------
+  RP2040 BAREMETAL SELF-TEST / BENCHMARK
+--------------------------------------------------------------
+
+--------------------------------------------------------------
+  SYSTEM INFO
+--------------------------------------------------------------
+  SDK version      : 2.3.0
+  Compiler          : 15.3.1 20260627
+  Chip ID (SYSINFO) : 0x20002927 (mfr 0x927, part 0x0002, rev 2)
+  Cores             : 2 x Cortex-M0+ (this core = cpuid 0)
+  sys clock         : 125.000 MHz
+  usb clock         : 48.000 MHz
+  Flash size        : 2048 KiB (configured)
+  SRAM (total)      : 264 KiB
+
+--------------------------------------------------------------
+  CPU BENCHMARK
+--------------------------------------------------------------
+  [ OK ] integer ALU determinism check (repeat-run checksum match)
+
+  -- single-core (core0) --
+  integer mix   :   20000000 iters in  2240052 us  ->    8.93 Mops/s  (checksum f2c53d7b)
+  hw divider    :    5000000 iters in  1920071 us  ->    2.60 Mops/s  (checksum dcefbeaa)
+  soft-float    :    2000000 iters in  3312076 us  ->    0.60 Mops/s  (result 1.476837, no FPU)
+
+  -- dual-core scaling (core0 + core1 concurrently) --
+  [ OK ] core1 launch handshake
+  [ OK ] core1 completion handshake
+  core0:  2560094 us   core1:  2560051 us   combined:   15.62 Mops/s (1.75x single-core)
+  [ OK ] core0 workload result stable under concurrent core1 load
+  [ OK ] core1 produced identical checksum to core0 (same workload)
+
+--------------------------------------------------------------
+  MEMORY (SRAM) BENCHMARK
+--------------------------------------------------------------
+  Test region: 230 KiB of 264 KiB total chip SRAM (remainder is
+  live stack/USB/runtime state and can't be tested from code
+  running on top of it)
+  write :    230 KiB in    6158 us ->     38.2 MB/s
+  read  :    230 KiB in    4302 us ->     54.7 MB/s
+  copy  :    115 KiB in     768 us ->    153.3 MB/s
+  [ OK ] copy buffer verify
+
+  pattern integrity tests (230 KiB region):
+  [ OK ] pattern 'address' (0 mismatches)
+  [ OK ] pattern '~address' (0 mismatches)
+  [ OK ] pattern '0xAAAAAAAA' (0 mismatches)
+  [ OK ] pattern '0x55555555' (0 mismatches)
+
+--------------------------------------------------------------
+  FLASH BENCHMARK
+--------------------------------------------------------------
+  XIP cached read    :    800 KiB (repeat) in    65909 us ->     12.4 MB/s  (chk 046d74d8)
+  XIP streaming read :    512 KiB (once)   in   103035 us ->      5.1 MB/s  (chk 07f80000)
+
+  full-chip erase/program/verify sweep: 500 sectors, 2000 KiB (offset 0x00c000-0x200000)
+  (own program occupies the first 48 KiB, left untouched)
+  [ OK ] flash_safe_execute full-chip erase+program (core1 parked safely)
+  [ OK ] verify all 500 sectors (2000 KiB) - 0 mismatches, all flash accessible
+  erase   :    130256 us total  (2000 KiB, 15722.9 KB/s aggregate)
+  program :   1982012 us total  (2000 KiB, 1033.3 KB/s aggregate)
+  [ OK ] cleanup erase (all swept sectors restored to blank 0xFF state)
+
+--------------------------------------------------------------
+  CPU BASELINE: CoreMark (portable, for comparing other MCUs)
+--------------------------------------------------------------
+  Running (self-calibrates to a ~10s measured run)...
+2K performance run parameters for coremark.
+CoreMark Size    : 666
+Total ticks      : 13245104
+Total time (secs): 13.245104
+Iterations/Sec   : 226.498788
+Iterations       : 3000
+Compiler version : GCC15.3.1 20260627
+Compiler flags   : -O2 cortex-m0plus
+Memory location  : STACK
+seedcrc          : 0xe9f5
+[0]crclist       : 0xe714
+[0]crcmatrix     : 0x1fd7
+[0]crcstate      : 0x8e3a
+[0]crcfinal      : 0xcc42
+Correct operation validated. See README.md for run and reporting rules.
+CoreMark 1.0 : 226.498788 / GCC15.3.1 20260627 -O2 cortex-m0plus / STACK
+
+  wall time        : 18.15 s (includes self-calibration passes)
+  CoreMark/MHz     : 1.812  (226.50 CoreMark @ 125.0 MHz)
+  -> compare this CoreMark/MHz figure directly against any
+     other MCU's published CoreMark/MHz score.
+  [ OK ] CoreMark completed and reported a score
+
+--------------------------------------------------------------
+  SUMMARY
+--------------------------------------------------------------
+  ALL CHECKS PASSED - CPU, SRAM and Flash all verified working.
+--------------------------------------------------------------
+
+done. (send any byte over serial to re-enter the USB bootloader)

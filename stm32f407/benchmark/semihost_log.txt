@@ -1,0 +1,128 @@
+st-util 1.8.0
+2026-08-17T16:40:46 INFO common.c: STM32F4x5_F4x7: 192 KiB SRAM, 1024 KiB flash in at least 16 KiB pages.
+2026-08-17T16:40:46 INFO gdb-server.c: Listening at *:4250...
+2026-08-17T16:40:49 INFO common.c: STM32F4x5_F4x7: 192 KiB SRAM, 1024 KiB flash in at least 16 KiB pages.
+2026-08-17T16:40:49 INFO gdb-server.c: Found 6 hw breakpoint registers
+2026-08-17T16:40:49 INFO gdb-server.c: GDB connected.
+
+
+--------------------------------------------------------------
+  STM32F407 BAREMETAL SELF-TEST / BENCHMARK
+--------------------------------------------------------------
+
+--------------------------------------------------------------
+  SYSTEM INFO
+--------------------------------------------------------------
+  Target            : STM32F407VGT6 (Discovery, UM1472)
+  Console           : semihosting over SWD (debugger attached)
+  Compiler          : GCC 15.3.1 20260627
+  DBGMCU_IDCODE     : 0x10016413 (dev 0x413, rev 0x1001)
+  Core              : 1 x Cortex-M4F (single-precision FPU, DSP)
+  sys clock         : 168.000 MHz
+  timer clock       : 1.000 MHz (TIM2, 32-bit, free running)
+  Flash             : 1024 KiB in 12 sectors (16/16/16/16/64/128x7)
+  SRAM              : 128 KiB main + 64 KiB CCM (core-coupled)
+  this binary ends  : 0x08008134 (33 KiB used)
+
+--------------------------------------------------------------
+  CPU BENCHMARK
+--------------------------------------------------------------
+  [ OK ] integer ALU determinism check (repeat-run checksum match)
+  integer mix   :   20000000 iters in  1309525 us  ->   15.27 Mops/s  (checksum f2c53d7b)
+  hw divider    :    5000000 iters in   615779 us  ->    8.12 Mops/s  (checksum dcefbeaa)
+                  (Cortex-M4 native UDIV/SDIV, not a separate peripheral)
+
+  -- floating point: hardware FPU vs software emulation --
+  float  (FPU)  :    2000000 iters in   142858 us  ->   14.00 Mops/s  (result 1.476837)
+  double (soft) :    2000000 iters in  2821430 us  ->    0.71 Mops/s  (result 1.442805)
+  -> FPU speedup: 19.75x  (the M4F FPU is single-precision only, so
+     every double-precision op above is a library call)
+  [ OK ] float and double workloads produced sane results
+
+  -- note: single core --
+  The STM32F407 has one Cortex-M4F core, so there is no multi-core
+  scaling figure to measure.
+
+--------------------------------------------------------------
+  MEMORY BENCHMARK (SRAM + CCM)
+--------------------------------------------------------------
+  Main SRAM test region : 96 KiB of 128 KiB (rest is .data/.bss,
+                          heap/stack reservation and CoreMark's stack)
+  CCM test region       : 64 KiB of 64 KiB (all of it - nothing else
+                          in this program lives in CCM)
+
+  SRAM  write :     96 KiB in     732 us ->    134.3 MB/s
+  SRAM  read  :     96 KiB in    1026 us ->     95.8 MB/s
+  SRAM  copy  :     48 KiB in    1760 us ->     27.9 MB/s
+  [ OK ] SRAM copy buffer verify
+  [ OK ] SRAM pattern 'address' (0 mismatches)
+  [ OK ] SRAM pattern '~address' (0 mismatches)
+  [ OK ] SRAM pattern '0xAAAAAAAA' (0 mismatches)
+  [ OK ] SRAM pattern '0x55555555' (0 mismatches)
+
+  CCM   write :     64 KiB in     488 us ->    134.3 MB/s
+  CCM   read  :     64 KiB in     682 us ->     96.1 MB/s
+  CCM   copy  :     32 KiB in    1171 us ->     28.0 MB/s
+  [ OK ] CCM copy buffer verify
+  [ OK ] CCM pattern 'address' (0 mismatches)
+  [ OK ] CCM pattern '~address' (0 mismatches)
+  [ OK ] CCM pattern '0xAAAAAAAA' (0 mismatches)
+  [ OK ] CCM pattern '0x55555555' (0 mismatches)
+
+  CCM is core-coupled and zero-wait-state on the D-bus, but is not
+  reachable by DMA - a real constraint, not a benchmark artefact.
+
+--------------------------------------------------------------
+  FLASH BENCHMARK
+--------------------------------------------------------------
+  flash read, ART on  :   64 KiB in     2463 us ->     26.6 MB/s  (chk 00adca12)
+  flash read, ART off :   64 KiB in     7144 us ->      9.2 MB/s  (chk 00adca12)
+  -> ART speedup: 2.90x  (at 168 MHz flash needs 5 wait states; the
+     accelerator is what hides them)
+  [ OK ] flash reads identical with ART on and off
+
+  full-chip erase/program/verify sweep: sectors 3-11, 976 KiB
+  (sectors 0-2 hold this program and are left untouched)
+  [ OK ] erase+program completed with no FLASH_SR error flags
+  [ OK ] verify all 9 sectors (976 KiB) - 0 mismatches, all flash accessible
+  erase   :   7924106 us total  (976 KiB, 126.1 KB/s aggregate)
+  program :   3521023 us total  (976 KiB, 283.8 KB/s aggregate)
+  [ OK ] cleanup erase (all swept sectors restored to blank 0xFF state)
+
+--------------------------------------------------------------
+  CPU BASELINE: CoreMark (portable, for comparing other MCUs)
+--------------------------------------------------------------
+  Running (self-calibrates to a ~10s measured run)...
+2K performance run parameters for coremark.
+CoreMark Size    : 666
+Total ticks      : 15864306
+Total time (secs): 15.864306
+Iterations/Sec   : 378.207531
+Iterations       : 6000
+Compiler version : GCC15.3.1 20260627
+Compiler flags   : -O2 cortex-m4f
+Memory location  : STACK
+seedcrc          : 0xe9f5
+[0]crclist       : 0xe714
+[0]crcmatrix     : 0x1fd7
+[0]crcstate      : 0x8e3a
+[0]crcfinal      : 0xa14c
+Correct operation validated. See README.md for run and reporting rules.
+CoreMark 1.0 : 378.207531 / GCC15.3.1 20260627 -O2 cortex-m4f / STACK
+
+  wall time        : 20.82 s (includes self-calibration passes)
+  CoreMark/MHz     : 2.251  (378.21 CoreMark @ 168.0 MHz)
+  -> compare this CoreMark/MHz figure directly against any
+     other MCU's published CoreMark/MHz score.
+  [ OK ] CoreMark completed and reported a score
+
+--------------------------------------------------------------
+  SUMMARY
+--------------------------------------------------------------
+  ALL CHECKS PASSED - CPU, FPU, SRAM, CCM and Flash all verified.
+--------------------------------------------------------------
+
+done.
+2026-08-17T16:41:49 ERROR gdb-server.c: cannot recv: -2
+2026-08-17T16:41:49 INFO gdb-server.c: Listening at *:4250...
+Receive signal 15. Exiting...

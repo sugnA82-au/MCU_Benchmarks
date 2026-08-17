@@ -11,6 +11,7 @@ CoreMark is the one benchmark here that's directly comparable across vendors, so
 | MCU | Cores | Clock | CoreMark | CoreMark/MHz | Folder |
 |---|---|---|---|---|---|
 | RP2040 | 2x Cortex-M0+ | 125 MHz | 226.5 | 1.81 | [`rp2040/`](rp2040/) |
+| STM32F407 | 1x Cortex-M4F | 168 MHz | 378.2 | 2.25 | [`stm32f407/`](stm32f407/) |
 
 New row each time a new chip gets benchmarked with CoreMark.
 

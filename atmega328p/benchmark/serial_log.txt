@@ -1,0 +1,154 @@
+
+
+--------------------------------------------------------------
+  ATmega328P BAREMETAL SELF-TEST / BENCHMARK
+--------------------------------------------------------------
+
+--------------------------------------------------------------
+  SYSTEM INFO
+--------------------------------------------------------------
+  Target            : ATmega328P, Arduino Uno-compatible board
+  Device signature  : 1E 95 0F  (expect 1E 95 0F)
+  Fuses  L/H/E      : FF / DE / FD   OSCCAL B6
+  Console           : UART0 115200 8N1 via on-board USB-serial
+  Compiler          : GCC 7.3.0
+  Core              : 1 x AVR (8-bit, Harvard, no FPU, no divider)
+  sys clock         : 16000000 Hz (16 MHz crystal, CKDIV8 off)
+  timer clock       : 2000000 Hz (Timer1, /8, free running)
+  Flash             : 32768 bytes (512 of them are the bootloader)
+  SRAM              : 2048 bytes
+  EEPROM            : 1024 bytes
+  this binary uses  : 28172 bytes flash, 1619 bytes static SRAM
+  sizeof(double)    : 4 bytes  (32-bit on this toolchain)
+  printf float check: 3.14159  (must read 3.14159)
+
+--------------------------------------------------------------
+  CPU BENCHMARK
+--------------------------------------------------------------
+  [ OK ] integer ALU determinism check (repeat-run checksum match)
+  integer mix   : 20000000 iters in 213774889 us
+                  -> 0.0936 Mops/s, 171 cyc/iter, checksum f2c53d7b
+  [ OK ] integer checksum matches the cross-chip reference f2c53d7b
+  divide (soft) : 5000000 iters in 223067281 us
+                  -> 0.0224 Mops/s, 713 cyc/iter, checksum dcefbeaa
+                  AVR has no divide instruction: this is avr-libc's
+                  __udivmodsi4, not a hardware divider
+
+  -- floating point: software only, this part has no FPU --
+  float  (soft) : 2000000 iters in 42004880 us
+                  -> 0.0476 Mops/s, 336 cyc/iter, result 1.476837
+  [ OK ] float workload produced a sane result
+
+  -- note: no double-precision path to compare against --
+  The reference suite measures a hardware FPU against software
+  double precision. This chip has no FPU at all, and avr-gcc makes
+  double an alias for 32-bit float, so there is no second path to
+  measure. The float row above IS the software row.
+
+  -- note: single core --
+  One AVR core, so there is no multi-core scaling to measure.
+
+--------------------------------------------------------------
+  MEMORY BENCHMARK (SRAM)
+--------------------------------------------------------------
+  Test region : 1200 of 2048 bytes of SRAM. The rest is .data/.bss, the
+                printf staging buffer and the stack - state this code
+                is itself running on top of.
+
+  SRAM write : 240000 bytes in 78872 us -> 3.043 MB/s
+  SRAM read  : 240000 bytes in 67580 us -> 3.551 MB/s
+  SRAM copy  : 120000 bytes in 60130 us -> 1.996 MB/s
+  [ OK ] SRAM copy buffer verify
+  [ OK ] SRAM pattern 'address' (0 mismatches)
+  [ OK ] SRAM pattern '~address' (0 mismatches)
+  [ OK ] SRAM pattern '0xAAAAAAAA' (0 mismatches)
+  [ OK ] SRAM pattern '0x55555555' (0 mismatches)
+
+  The write loop's 32-bit multiply does not survive -O2: GCC
+  strength-reduces i*K into a running add, so the emitted loop is
+  four st Z+ and one 32-bit add. Write and read are both honest
+  memory figures here. Copy is avr-libc's memcpy, a byte loop, and
+  says more about the library than about the silicon.
+
+--------------------------------------------------------------
+  FLASH BENCHMARK (read path)
+--------------------------------------------------------------
+  flash read (LPM) : 262144 bytes in 196642 us -> 1.333 MB/s
+                     checksum 01fa9f50 over 8 passes
+  SRAM read (LD)   : 261600 bytes in 163597 us -> 1.599 MB/s
+                     checksum 01534b60 over 218 passes
+  -> byte reads from flash cost 1.20x what they cost from SRAM.
+     LPM is 3 cycles against LD's 2; the rest of the gap is the
+     address setup a program-memory read needs and a post-
+     incrementing data pointer does not. This part is Harvard:
+     flash is a separate address space and a plain C pointer
+     cannot see it at all.
+  [ OK ] flash read returned data
+
+  -- flash program/erase: not possible from application code --
+  SPM only executes from the boot loader section (datasheet 27.4).
+  This board runs stock Optiboot 4.4, which exposes no SPM entry
+  point, so an application-space erase/program sweep cannot be done
+  without replacing the bootloader - which needs an ISP programmer
+  this suite does not assume. Substituted below: the 1 KB EEPROM,
+  the on-chip non-volatile memory this part CAN write from here.
+
+--------------------------------------------------------------
+  EEPROM SWEEP (substitutes for the flash sweep)
+--------------------------------------------------------------
+  [ OK ] all 1024 bytes read 0xFF after erase
+  [ OK ] verify all 1024 bytes against pattern - 0 mismatches
+  erase   : 1024 bytes in 1828522 us -> 0.56 KB/s (1785 us/byte)
+  program : 1024 bytes in 1827421 us -> 0.56 KB/s (1784 us/byte)
+  read    : 65536 bytes in 127021 us -> 0.516 MB/s (chk 007f4000)
+  [ OK ] EEPE cleared inside the guard time on every write
+  This part's EEPROM controller has no error status register, so
+  'no errors' means EEPE cleared in time and every byte read back.
+  [ OK ] cleanup erase (EEPROM restored to blank 0xFF)
+
+--------------------------------------------------------------
+  CPU BASELINE: CoreMark - REDUCED DATASET, SEE WARNING
+--------------------------------------------------------------
+  WARNING: this is NOT a conformant CoreMark score.
+  A conformant run needs a 2000-byte working set. This chip has
+  2048 bytes of SRAM in total, so that configuration cannot be
+  linked, let alone run. What follows is the 1200-byte profile-run
+  configuration. CoreMark still validates it against its own known
+  CRCs, so the arithmetic is proven correct - but the dataset is
+  smaller than the reporting rules require, so the score below is
+  NOT comparable with published CoreMark 1.0 numbers, nor with the
+  2000-byte runs from other chips. Read it as this chip's own
+  figure, and only ever next to that caveat.
+
+  Running (self-calibrates to a ~10s measured run)...
+Profile generation run parameters for coremark.
+CoreMark Size    : 400
+Total ticks      : 15214236
+Total time (secs): 15.214236
+Iterations/Sec   : 39.436749
+Iterations       : 600
+Compiler version : GCC7.3.0
+Compiler flags   : -O2 avr5 TOTAL_DATA_SIZE=1200
+Memory location  : STATIC
+seedcrc          : 0x4eaf
+[0]crclist       : 0x6a79
+[0]crcmatrix     : 0x5608
+[0]crcstate      : 0xe5a4
+[0]crcfinal      : 0xee4f
+Correct operation validated. See README.md for run and reporting rules.
+
+  wall time        : 18.05 s (includes self-calibration passes)
+  iterations/sec   : 39.437 at 16.0 MHz
+  per MHz          : 2.4648  (reduced dataset - not a CoreMark/MHz
+                     figure in the reportable sense)
+  [ OK ] CoreMark completed and reported a score
+
+--------------------------------------------------------------
+  SUMMARY
+--------------------------------------------------------------
+  RAM never touched by the stack : 92 bytes of 2048
+  [ OK ] SRAM headroom left over the whole run (canary intact)
+  ALL CHECKS PASSED - CPU, SRAM, flash read and EEPROM verified.
+--------------------------------------------------------------
+
+done.

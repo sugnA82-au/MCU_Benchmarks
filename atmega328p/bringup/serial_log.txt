@@ -1,0 +1,43 @@
+
+
+=============================================
+  ATmega328P BRING-UP
+=============================================
+  compiler      : GCC 7.3.0
+  MCUSR (reset) : 0x00  (cleared by Optiboot before app start)
+
+  -- fuses, read from the running chip --
+  low fuse      : 0xff  CKSEL=f SUT=3 CKDIV8=1
+  high fuse     : 0xde
+  ext fuse      : 0xfd
+  lock bits     : 0xcf
+  -> clock src  : external crystal 8 MHz+, CKDIV8 off (full speed)
+
+  -- Timer1 vs the watchdog's own RC oscillator --
+  131072 WDT clk: 2420679 Timer1 ticks
+  -> WDT RC at   108293 Hz, if the system clock is 16 MHz
+     (would be   54146 Hz at 8 MHz -- not a rate this RC runs)
+  [ OK ] system clock is the 16 MHz crystal, not the 8 MHz RC
+
+  -- GPIO --
+  DDRB          : 0x20  (PB5 output, on-board LED)
+  D2 pulled up  : 1  (expect 1)
+  D2 driven low : 0  (expect 0)
+  D2 released   : 1  (expect 1)
+  [ OK ] GPIO input path reads both levels
+
+  -- blinking at 1 Hz, one line per 5 s --
+  Compare the us column against wall-clock time on the host:
+  that is the only check here that does not trust the chip.
+
+  step  10  elapsed 5000007 us  (expect 5000000)
+  step  20  elapsed 10000007 us  (expect 10000000)
+  step  30  elapsed 15000007 us  (expect 15000000)
+  step  40  elapsed 20000006 us  (expect 20000000)
+  step  50  elapsed 25000005 us  (expect 25000000)
+  step  60  elapsed 30000006 us  (expect 30000000)
+  step  70  elapsed 35000006 us  (expect 35000000)
+  step  80  elapsed 40000006 us  (expect 40000000)
+  step  90  elapsed 45000006 us  (expect 45000000)
+  step 100  elapsed 50000005 us  (expect 50000000)
+  step 110  elapsed 55000006 us  (expect 55000000)

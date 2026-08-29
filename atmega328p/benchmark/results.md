@@ -4,7 +4,7 @@ Board: Arduino Uno-compatible, **ATmega328P @ 16 MHz** (external crystal,
 `CKDIV8` off), 32 KB flash (512 bytes of it the bootloader), **2 KB SRAM**,
 1 KB EEPROM. Device signature `1E 95 0F`, fuses L/H/E `FF`/`DE`/`FD`,
 `OSCCAL 0xB6`, stock Optiboot 4.4. Built with avr-gcc 7.3.0 / avr-libc,
-`-O2`. Binary: 28,172 bytes flash, 1,619 bytes static SRAM.
+`-O2`. Binary: 28,626 bytes flash, 1,619 bytes static SRAM.
 
 **15/15 checks passed. 0 failures.**
 
@@ -45,7 +45,7 @@ to price it against.
 | Iterations/sec | **39.437** |
 | Per MHz | **2.4648** |
 | Iterations | 600 |
-| Measured time | 15.214 s (self-calibrated) |
+| Measured time | 15.214 s (self-calibrated, 15,214,240 µs) |
 | Dataset | **1200 bytes — profile run, not the 2000-byte performance run** |
 | Compiler | GCC 7.3.0, `-O2 avr5 TOTAL_DATA_SIZE=1200` |
 | Memory location | STATIC |
@@ -53,17 +53,43 @@ to price it against.
 Self-validated: `Correct operation validated`, seedcrc `0x4eaf`, crclist
 `0x6a79`, crcmatrix `0x5608`, crcstate `0xe5a4`, crcfinal `0xee4f`.
 
-**Why it is not conformant.** A conformant CoreMark performance run operates
-on a 2000-byte working set. This chip has 2048 bytes of SRAM *in total* —
-there is no arrangement of 2000 bytes of data, a stack and a results structure
-that fits, so the conformant configuration cannot be linked, never mind run.
-What ran instead is the 1200-byte profile-run configuration, one of the sizes
-CoreMark holds known CRCs for, so the arithmetic is validated and provably
-correct. But less data per iteration means less work per iteration, so
-iterations/sec is measuring a smaller job. The figure is real, it is
-reproducible, and it is **not** comparable with published CoreMark 1.0 numbers
-or with the 2000-byte runs elsewhere in this repo. The firmware prints this
-warning immediately above the number so a stray copy of the log cannot be
+**Why it is not conformant, measured rather than argued.** A conformant
+CoreMark performance run operates on a 2000-byte working set, and this chip has
+2048 bytes of SRAM *in total*. To check that the suite around it was not the
+problem, CoreMark was also built **standalone** — no benchmark suite, no memory
+test buffer, no LED or EEPROM driver, `MEM_STATIC` so CoreMark declares the
+block itself:
+
+| Standalone CoreMark | |
+|---|---|
+| Static SRAM, 1200-byte dataset | 1588 B (the suite's is 1619 B) |
+| **CoreMark's own peak stack** | **265 B**, canary-measured |
+| Score | 39.436737 iter/s |
+
+Two things fall out of that. **Stripping the entire benchmark suite frees 31
+bytes** — because the suite already shares its memory-test region with
+CoreMark's working set, so there was never anything to reclaim. And the
+standalone score, 39.436737, is **exactly** the in-suite figure: the harness is
+not distorting the number at all.
+
+The arithmetic that settles it: CoreMark's working set at the conformant size
+plus CoreMark's own measured stack is **2000 + 265 = 2265 bytes, before a
+single byte of harness** — 217 more than the part physically has. There is no
+console, no driver and no cleverness that recovers 217 bytes from a program
+that is already at zero.
+
+Built anyway, the conformant configuration **links without complaint.**
+avr-gcc does not enforce the data region; `avr-size` reports `Data: 2388 bytes
+(116.6% Full)` and emits a perfectly valid `.hex`. Flashed, the chip prints
+**nothing at all** — `.bss` ends past `RAMEND`, so the stack is inside the data
+block before `main()` is reached. That silent link is worth knowing about in
+its own right: on this toolchain, overflowing SRAM is a number in `avr-size`
+output, not an error.
+
+So: less data per iteration means less work per iteration. The figure is real,
+it is reproducible, and it is **not** comparable with published CoreMark 1.0
+numbers or with the 2000-byte runs elsewhere in this repo. The firmware prints
+that warning immediately above the number so a stray copy of the log cannot be
 misread.
 
 ## Memory — SRAM
@@ -85,7 +111,7 @@ buffer is also CoreMark's working set — on a 2 KB part, sharing it is the
 difference between the suite fitting and not, and the two phases never run
 concurrently.
 
-**RAM headroom: 92 bytes of 2048 never touched by the stack**, measured with a
+**RAM headroom: 112 bytes of 2048 never touched by the stack**, measured with a
 `0xC5` canary painted across free RAM at `.init3` and checked at the end of the
 run. That is the check that says whether any of the numbers above can be
 trusted; on this part it is not a formality.
@@ -125,8 +151,8 @@ pattern, verified byte by byte, and erased back to blank.
 
 | Test | Work | Time | Rate | Per byte |
 |---|---:|---:|---:|---:|
-| Erase (erase-only mode) | 1024 B | 1,828,522 µs | **0.56 KB/s** | **1785 µs** |
-| Program (write-only mode) | 1024 B | 1,827,421 µs | **0.56 KB/s** | **1784 µs** |
+| Erase (erase-only mode) | 1024 B | 1,824,475 µs | **0.56 KB/s** | **1781 µs** |
+| Program (write-only mode) | 1024 B | 1,824,195 µs | **0.56 KB/s** | **1781 µs** |
 | Read | 65,536 B | 127,021 µs | **0.516 MB/s** | — |
 
 **Full sweep: all 1024 bytes erased, programmed and verified — 0 mismatches**,
@@ -134,7 +160,7 @@ then erased back to blank `0xFF` and verified blank.
 
 Erase-only and write-only are separate operations on this part, which is what
 lets the two be timed independently the way a flash sweep does. Both landed at
-1785 µs and 1784 µs per byte against a datasheet figure of 1.8 ms — the
+1781 µs per byte for both against a datasheet figure of 1.8 ms — the
 controller is running to spec, and the atomic erase-and-write mode this
 deliberately avoids would have taken 3.4 ms and collapsed both rows into one.
 
@@ -178,3 +204,20 @@ make console          # or any serial terminal at 115200
 
 A full run takes about seven minutes, almost all of it CPU. **The EEPROM sweep
 overwrites all 1024 bytes of EEPROM** and leaves it erased to `0xFF`.
+
+To reproduce the standalone CoreMark measurements above, build the `coremark/`
+directory against a `main()` that does nothing but bring up the UART and
+Timer1 and call `coremark_run()`, with `MEM_METHOD` set to `MEM_STATIC` in
+`core_portme.h`:
+
+```
+# the 1200-byte profile run that this folder reports
+-DITERATIONS=0 -DPROFILE_RUN=1 -DTOTAL_DATA_SIZE=1200
+
+# the conformant run, for the avr-size figure - links, will not run
+-DITERATIONS=0 -DPERFORMANCE_RUN=1 -DTOTAL_DATA_SIZE=2000
+```
+
+Peak stack is measured by painting free RAM with `0xC5` from a `.init3`
+constructor and counting how much of it survives, the same canary the suite
+reports in its summary.

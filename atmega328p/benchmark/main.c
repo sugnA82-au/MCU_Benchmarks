@@ -465,15 +465,21 @@ static void bench_coremark(void)
     section(PSTR("CPU BASELINE: CoreMark - REDUCED DATASET, SEE WARNING"));
 
     PR("  WARNING: this is NOT a conformant CoreMark score.\n");
-    PR("  A conformant run needs a 2000-byte working set. This chip has\n");
-    PR("  2048 bytes of SRAM in total, so that configuration cannot be\n");
-    PR("  linked, let alone run. What follows is the 1200-byte profile-run\n");
-    PR("  configuration. CoreMark still validates it against its own known\n");
-    PR("  CRCs, so the arithmetic is proven correct - but the dataset is\n");
-    PR("  smaller than the reporting rules require, so the score below is\n");
-    PR("  NOT comparable with published CoreMark 1.0 numbers, nor with the\n");
-    PR("  2000-byte runs from other chips. Read it as this chip's own\n");
-    PR("  figure, and only ever next to that caveat.\n\n");
+    PR("  A conformant run needs a 2000-byte working set and this chip has\n");
+    PR("  2048 bytes of SRAM in total. Measured rather than assumed: built\n");
+    PR("  standalone, with no suite around it, CoreMark's own peak stack on\n");
+    PR("  this part is 265 bytes. 2000 + 265 = 2265 bytes before a single\n");
+    PR("  byte of harness - 217 more than the part has. Built anyway,\n");
+    PR("  avr-gcc links it without complaint at 116.6%% of SRAM, and the\n");
+    PR("  chip then prints nothing at all: .bss ends past RAMEND and the\n");
+    PR("  stack is inside the data block before main() runs.\n");
+    PR("  What follows is the 1200-byte profile-run configuration, which\n");
+    PR("  CoreMark still validates against its own known CRCs, so the\n");
+    PR("  arithmetic is proven correct - but the dataset is smaller than\n");
+    PR("  the reporting rules require, so the score below is NOT comparable\n");
+    PR("  with published CoreMark 1.0 numbers, nor with the 2000-byte runs\n");
+    PR("  from other chips. Read it as this chip's own figure, and only\n");
+    PR("  ever next to that caveat.\n\n");
     PR("  Running (self-calibrates to a ~10s measured run)...\n");
 
     uint64_t t0 = time_us_64();

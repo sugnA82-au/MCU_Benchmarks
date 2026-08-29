@@ -116,9 +116,9 @@ ATmega328P, 16 MHz, 32 KB flash, 2 KB SRAM, 1 KB EEPROM.
 | SRAM write / read / copy | 3.043 / 3.551 / 1.996 MB/s |
 | SRAM integrity | 4 pattern sweeps, 0 mismatches |
 | Flash byte read (`LPM`) vs SRAM (`LD`) | 1.333 / 1.599 MB/s — 12.00 vs 10.01 cyc/byte (1.20×) |
-| EEPROM erase / program | 0.56 / 0.56 KB/s — 1785 / 1784 µs per byte |
+| EEPROM erase / program | 0.56 / 0.56 KB/s — 1781 / 1781 µs per byte |
 | EEPROM full sweep | 1024 B erased + programmed + verified, 0 mismatches |
-| RAM headroom | **92 bytes of 2048** never touched by the stack |
+| RAM headroom | **112 bytes of 2048** never touched by the stack |
 
 Integer checksum came out `f2c53d7b` — the cross-chip reference value — so the
 same arithmetic ran here as on the 32-bit parts in this repo. All three CPU
@@ -126,13 +126,23 @@ timings reproduced to the microsecond across two full runs.
 
 ### Reading these numbers
 
-- **CoreMark here is not a CoreMark score.** The conformant run needs a
-  2000-byte working set and this chip has 2048 bytes of SRAM in total, so it
-  cannot be linked, let alone run. The 1200-byte profile-run configuration was
-  used instead — CoreMark validates it against its own known CRCs, so the
-  arithmetic is proven correct, but less data per iteration means less work per
-  iteration. Not comparable with published CoreMark 1.0 numbers or with the
-  other chips here. The firmware prints that warning above the number itself.
+- **CoreMark here is not a CoreMark score, and the margin was measured.** The
+  conformant run needs a 2000-byte working set; built standalone with nothing
+  else linked in, CoreMark's own peak stack on this part is 265 bytes. That is
+  2265 bytes needed against the 2048 the chip has, before any harness at all.
+  Stripping the whole benchmark suite frees 31 bytes, because the suite already
+  shares its memory-test region with CoreMark's working set. The 1200-byte
+  profile-run configuration was used instead — CoreMark validates it against
+  its own known CRCs, so the arithmetic is proven correct, but less data per
+  iteration means less work per iteration. Not comparable with published
+  CoreMark 1.0 numbers or with the other chips here. The firmware prints that
+  warning above the number itself.
+- **The conformant build links cleanly and then does nothing.** avr-gcc does
+  not enforce the data region: `avr-size` reports `Data: 2388 bytes (116.6%
+  Full)` and emits a valid `.hex`. Flashed, the chip prints not one byte —
+  `.bss` ends past `RAMEND` and the stack sits inside the data block before
+  `main()` runs. Overflowing SRAM on this toolchain is a number in `avr-size`
+  output, not an error.
 - **Cycles per iteration is the number worth carrying away.** Mops/s figures
   are awkwardly small at 16 MHz and they fold in the clock. 171 cycles for an
   integer round, 713 for a 32-bit divide-and-modulo, 336 for a software float
@@ -142,9 +152,9 @@ timings reproduced to the microsecond across two full runs.
   measured 12.00 and 10.01 cycles per byte match the disassembly exactly. An
   earlier version measured 2.00× because the SRAM side's accumulator was dead
   code and GCC deleted it — see below.
-- **The EEPROM controller is running to spec.** 1785 µs and 1784 µs per byte
-  against a datasheet 1.8 ms, for erase-only and write-only respectively.
-- **92 bytes of SRAM headroom is not a formality on this part.** It is measured
+- **The EEPROM controller is running to spec.** 1781 µs per byte for both
+  erase-only and write-only, against a datasheet 1.8 ms.
+- **112 bytes of SRAM headroom is not a formality on this part.** It is measured
   with a canary painted across free RAM at `.init3`, and it is the check that
   says whether everything above it can be trusted.
 

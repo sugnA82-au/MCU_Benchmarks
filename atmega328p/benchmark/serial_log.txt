@@ -18,7 +18,7 @@
   Flash             : 32768 bytes (512 of them are the bootloader)
   SRAM              : 2048 bytes
   EEPROM            : 1024 bytes
-  this binary uses  : 28172 bytes flash, 1619 bytes static SRAM
+  this binary uses  : 28626 bytes flash, 1619 bytes static SRAM
   sizeof(double)    : 4 bytes  (32-bit on this toolchain)
   printf float check: 3.14159  (must read 3.14159)
 
@@ -74,7 +74,7 @@
   FLASH BENCHMARK (read path)
 --------------------------------------------------------------
   flash read (LPM) : 262144 bytes in 196642 us -> 1.333 MB/s
-                     checksum 01fa9f50 over 8 passes
+                     checksum 01f7cfc8 over 8 passes
   SRAM read (LD)   : 261600 bytes in 163597 us -> 1.599 MB/s
                      checksum 01534b60 over 218 passes
   -> byte reads from flash cost 1.20x what they cost from SRAM.
@@ -98,8 +98,8 @@
 --------------------------------------------------------------
   [ OK ] all 1024 bytes read 0xFF after erase
   [ OK ] verify all 1024 bytes against pattern - 0 mismatches
-  erase   : 1024 bytes in 1828522 us -> 0.56 KB/s (1785 us/byte)
-  program : 1024 bytes in 1827421 us -> 0.56 KB/s (1784 us/byte)
+  erase   : 1024 bytes in 1824475 us -> 0.56 KB/s (1781 us/byte)
+  program : 1024 bytes in 1824195 us -> 0.56 KB/s (1781 us/byte)
   read    : 65536 bytes in 127021 us -> 0.516 MB/s (chk 007f4000)
   [ OK ] EEPE cleared inside the guard time on every write
   This part's EEPROM controller has no error status register, so
@@ -110,22 +110,28 @@
   CPU BASELINE: CoreMark - REDUCED DATASET, SEE WARNING
 --------------------------------------------------------------
   WARNING: this is NOT a conformant CoreMark score.
-  A conformant run needs a 2000-byte working set. This chip has
-  2048 bytes of SRAM in total, so that configuration cannot be
-  linked, let alone run. What follows is the 1200-byte profile-run
-  configuration. CoreMark still validates it against its own known
-  CRCs, so the arithmetic is proven correct - but the dataset is
-  smaller than the reporting rules require, so the score below is
-  NOT comparable with published CoreMark 1.0 numbers, nor with the
-  2000-byte runs from other chips. Read it as this chip's own
-  figure, and only ever next to that caveat.
+  A conformant run needs a 2000-byte working set and this chip has
+  2048 bytes of SRAM in total. Measured rather than assumed: built
+  standalone, with no suite around it, CoreMark's own peak stack on
+  this part is 265 bytes. 2000 + 265 = 2265 bytes before a single
+  byte of harness - 217 more than the part has. Built anyway,
+  avr-gcc links it without complaint at 116.6% of SRAM, and the
+  chip then prints nothing at all: .bss ends past RAMEND and the
+  stack is inside the data block before main() runs.
+  What follows is the 1200-byte profile-run configuration, which
+  CoreMark still validates against its own known CRCs, so the
+  arithmetic is proven correct - but the dataset is smaller than
+  the reporting rules require, so the score below is NOT comparable
+  with published CoreMark 1.0 numbers, nor with the 2000-byte runs
+  from other chips. Read it as this chip's own figure, and only
+  ever next to that caveat.
 
   Running (self-calibrates to a ~10s measured run)...
 Profile generation run parameters for coremark.
 CoreMark Size    : 400
-Total ticks      : 15214236
-Total time (secs): 15.214236
-Iterations/Sec   : 39.436749
+Total ticks      : 15214240
+Total time (secs): 15.214240
+Iterations/Sec   : 39.436737
 Iterations       : 600
 Compiler version : GCC7.3.0
 Compiler flags   : -O2 avr5 TOTAL_DATA_SIZE=1200
@@ -146,7 +152,7 @@ Correct operation validated. See README.md for run and reporting rules.
 --------------------------------------------------------------
   SUMMARY
 --------------------------------------------------------------
-  RAM never touched by the stack : 92 bytes of 2048
+  RAM never touched by the stack : 112 bytes of 2048
   [ OK ] SRAM headroom left over the whole run (canary intact)
   ALL CHECKS PASSED - CPU, SRAM, flash read and EEPROM verified.
 --------------------------------------------------------------

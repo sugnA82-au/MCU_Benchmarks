@@ -57,7 +57,7 @@ Read back live from the running chip, not assumed. Full capture in
 | High / ext fuse | `0xDE` / `0xFD` | Stock Uno set: 512-byte boot section, BOD 2.7 V |
 | Lock bits | `0xCF` | Bootloader section write-protected |
 | WDT RC cross-check | 2,420,679 Timer1 ticks per 131,072 WDT cycles | → WDT RC at 108.3 kHz for a 16 MHz system clock |
-| Host wall-clock | chip 50.000000 s vs host 49.9763 s | **0.048%** apart over 50 s |
+| Host wall-clock | chip 49.999999 s vs host 49.9763 s | **0.048%** apart over 50 s |
 | `DDRB` | `0x20` | PB5 configured as output |
 | D2 pulled up / driven low / released | `1` / `0` / `1` | Input path reads both levels |
 | `MCUSR` | `0x00` | Cleared by Optiboot before the app runs — see below |

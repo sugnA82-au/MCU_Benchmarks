@@ -17,15 +17,17 @@ board already has, so no programmer hardware is involved at any point.
 
 **15/15 checks passed.** Integer ALU at **171 cycles per iteration**, SRAM and
 EEPROM fully swept and verified clean, and the whole suite fits in 2 KB of RAM
-with **92 bytes to spare**.
+with **112 bytes to spare**.
 
 There is no headline CoreMark figure, and that is the finding. **This chip
-cannot run a conformant CoreMark**: the standard performance run needs a
-2000-byte working set and the part has 2048 bytes of SRAM in total, so that
-configuration cannot even be linked. The reduced 1200-byte profile run scores
-**39.44 iterations/sec, 2.465 per MHz** — CRC-validated by CoreMark itself, but
-not comparable with the other chips in this repo or with any published
-CoreMark 1.0 number.
+cannot run a conformant CoreMark**, and it is short by a measured margin rather
+than an argued one: the standard performance run needs a 2000-byte working set,
+CoreMark's own peak stack on this part measures 265 bytes, and the chip has
+2048 bytes of SRAM in total — 2265 needed against 2048 available, before a
+single byte of harness. The reduced 1200-byte profile run scores **39.44
+iterations/sec, 2.465 per MHz** — CRC-validated by CoreMark itself, but not
+comparable with the other chips in this repo or with any published CoreMark 1.0
+number.
 
 ## Layout
 
@@ -50,9 +52,9 @@ Each folder has its own README with build instructions and full detail.
 | **CoreMark** | **39.44 iter/s — 2.465/MHz, reduced dataset, not conformant** |
 | SRAM write / read / copy | 3.043 / 3.551 / 1.996 MB/s |
 | Flash read (`LPM`) vs SRAM (`LD`) | 1.333 / 1.599 MB/s — 12.00 vs 10.01 cyc/byte |
-| EEPROM erase / program | 1785 / 1784 µs per byte |
+| EEPROM erase / program | 1781 / 1781 µs per byte |
 | EEPROM full sweep | 1024 B erased + programmed + verified, 0 mismatches |
-| RAM headroom | 92 bytes of 2048 |
+| RAM headroom | 112 bytes of 2048 |
 
 ## Chip-specific notes
 
@@ -81,8 +83,8 @@ deliberately and read with different instructions.
 **The EEPROM is the only non-volatile memory this part can write from
 application code**, which is why it stands in for the flash sweep. Erase-only
 and write-only are separate 1.8 ms operations, so erase and program can be
-timed independently exactly as a flash sweep does. Both measured within a
-tenth of a percent of the datasheet figure.
+timed independently exactly as a flash sweep does. Both measured 1781 µs per
+byte against a datasheet 1.8 ms.
 
 **Single core.** One AVR core, so there is no multi-core scaling figure to
 report.
@@ -97,6 +99,15 @@ add one. Without it there is no way to write flash from where a benchmark
 runs, and replacing the bootloader needs an ISP programmer. The suite
 substitutes the EEPROM and says so in its own output rather than quietly
 dropping the test.
+
+**avr-gcc will happily link a binary that does not fit in SRAM.** There is no
+error and no warning — the data region is not enforced. Building CoreMark at
+its conformant 2000-byte dataset produces a valid `.hex` and an `avr-size` line
+reading `Data: 2388 bytes (116.6% Full)`. Flashed, the chip prints nothing at
+all: `.bss` ends past `RAMEND`, so the stack is inside the data block before
+`main()` runs, and there is no diagnostic anywhere to tell you that. **Read the
+`avr-size` percentage after every build.** On a 2 KB part it is the number that
+matters most, and it is the only place the failure shows up.
 
 **`printf_P` with `%f` prints `?`, silently.** `-lprintf_flt` overrides
 `vfprintf` but never `vfprintf_P`, so keeping a format string in flash — which

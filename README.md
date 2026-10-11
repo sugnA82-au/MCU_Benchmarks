@@ -13,8 +13,9 @@ CoreMark is the one benchmark here that's directly comparable across vendors, so
 | RP2040 | 2x Cortex-M0+ | 125 MHz | 226.5 | 1.81 | [`rp2040/`](rp2040/) |
 | STM32F407 | 1x Cortex-M4F | 168 MHz | 378.2 | 2.25 | [`stm32f407/`](stm32f407/) |
 | ATmega328P | 1x AVR (8-bit) | 16 MHz | 39.4 \* | 2.46 \* | [`atmega328p/`](atmega328p/) |
+| CH32V003 | 1x RV32EC (QingKe V2A) | 48 MHz | 115.9 \* | 2.41 \* | [`ch32v003/`](ch32v003/) |
 
-New row each time a new chip gets benchmarked with CoreMark.
+\* Reduced 1200-byte dataset: the chip's SRAM is too small for the standard 2000-byte run, so the score is real and CRC-validated but not comparable with the other rows. See the MCU's own README.
 
 ## Layout
 

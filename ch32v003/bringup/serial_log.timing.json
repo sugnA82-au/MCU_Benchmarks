@@ -1,0 +1,17 @@
+{
+  "tool": "minichlink -b -T",
+  "host_utc": "2026-10-11T04:13:43Z",
+  "complete": true,
+  "markers": [
+    {
+      "line": "@BEGIN uptime",
+      "first_byte_s": 3.2652208749204874,
+      "newline_s": 3.2724949999246746
+    },
+    {
+      "line": "@END uptime us=60000000",
+      "first_byte_s": 63.10607587499544,
+      "newline_s": 63.11614066688344
+    }
+  ]
+}

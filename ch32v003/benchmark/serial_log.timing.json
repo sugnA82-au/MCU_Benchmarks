@@ -1,0 +1,37 @@
+{
+  "tool": "minichlink -b -T",
+  "host_utc": "2026-10-11T04:12:02Z",
+  "complete": true,
+  "markers": [
+    {
+      "line": "@BEGIN integer",
+      "first_byte_s": 5.147390624973923,
+      "newline_s": 5.155302709201351
+    },
+    {
+      "line": "@END integer us=14166667",
+      "first_byte_s": 19.263638708973303,
+      "newline_s": 19.27427670918405
+    },
+    {
+      "line": "@BEGIN divide",
+      "first_byte_s": 19.341616625199094,
+      "newline_s": 19.349256542045623
+    },
+    {
+      "line": "@END divide us=78673998",
+      "first_byte_s": 97.66945737507194,
+      "newline_s": 97.67903225007467
+    },
+    {
+      "line": "@BEGIN float",
+      "first_byte_s": 97.8865392091684,
+      "newline_s": 97.89341962500475
+    },
+    {
+      "line": "@END float us=32041668",
+      "first_byte_s": 129.79915691702627,
+      "newline_s": 129.80806104210205
+    }
+  ]
+}

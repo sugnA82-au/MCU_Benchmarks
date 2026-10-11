@@ -1,0 +1,28 @@
+Found WCH Link
+WCH Programmer is LinkE version 2.18
+Detected CH32V003
+Flash Storage: 16 kB
+Part UUID: 9b-5f-ab-cd-05-17-bd-eb
+Part Type: 00-30-05-10
+Read protection: disabled
+Interface Setup
+Terminal started
+
+
+
+CH32V003 BRING-UP
+RCC_CTLR=03084e83 RCC_CFGR0=0000000a FLASH_ACTLR=00000001 SYSTICK_CTLR=00000001
+ESIG flash=16 KB  UID (64-bit) 9b5fabcd 0517bdeb
+  [ OK ] RCC_CFGR0.SWS = PLL is the system clock
+  [ OK ] RCC_CTLR.PLLRDY
+  [ OK ] RCC_CTLR.HSIRDY
+  [ OK ] FLASH_ACTLR.LATENCY = 1 wait state
+PD6 pulled up reads 1, pulled down reads 0
+  [ OK ] GPIO input path reads both levels (PD6 internal pulls)
+@BEGIN uptime
+@END uptime us=60000000
+PD4 driven 120 edges, read back wrong 0 times
+  [ OK ] GPIO output path: PD4 read back matches at every edge
+SysTick elapsed 360000001 ticks for 120 half-periods of 500 ms
+
+BRINGUP_DONE failures=0 checks=6

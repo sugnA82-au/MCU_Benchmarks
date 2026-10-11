@@ -1,0 +1,17 @@
+{
+  "tool": "minichlink -b -T",
+  "host_utc": "2026-10-11T04:14:43Z",
+  "complete": true,
+  "markers": [
+    {
+      "line": "@BEGIN coremark",
+      "first_byte_s": 3.77409049984999,
+      "newline_s": 3.7794846249744296
+    },
+    {
+      "line": "@END coremark us=27004753",
+      "first_byte_s": 30.671442833030596,
+      "newline_s": 30.678779457928613
+    }
+  ]
+}

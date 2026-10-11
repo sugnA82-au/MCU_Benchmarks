@@ -1,0 +1,116 @@
+Found WCH Link
+WCH Programmer is LinkE version 2.18
+Detected CH32V003
+Flash Storage: 16 kB
+Part UUID: 9b-5f-ab-cd-05-17-bd-eb
+Part Type: 00-30-05-10
+Read protection: disabled
+Interface Setup
+Terminal started
+
+
+
+--------------------------------------------------------------
+  CH32V003 BAREMETAL SELF-TEST / BENCHMARK (suite image)
+--------------------------------------------------------------
+BENCH_START
+
+--------------------------------------------------------------
+  SYSTEM INFO
+--------------------------------------------------------------
+  Target     : CH32V003F4P6, 1 x RV32EC (no M ext: no hw mul/div, no FPU)
+  Console    : WCH-Link debug channel on SWIO (PD1)
+  Compiler   : GCC 12.2.0
+  sys clock  : 48000000 Hz (24 MHz HSI x2, PLL)   timer: 6000000 Hz (SysTick, HCLK/8)
+  Flash/SRAM : 16384 / 2048 bytes   UID (64-bit) 9b5fabcd 0517bdeb
+  this image : 12800 bytes flash, 1212 bytes static SRAM
+  RCC_CTLR=03084e83 RCC_CFGR0=0000000a FLASH_ACTLR=00000001 SYSTICK_CTLR=00000001
+  [ OK ] RCC_CFGR0.SWS: system clock is the PLL
+  [ OK ] RCC_CTLR.PLLRDY set
+  [ OK ] FLASH_ACTLR.LATENCY = 1 wait state (needed above 24 MHz)
+  [ OK ] ESIG flash capacity reads 16 KB
+  printf check      : 123456789 89abcdef 007  (must read 123456789 89abcdef 007)
+  fixed-point check : 3.14159  (must read 3.14159)
+  [ OK ] printf format specifiers behave (no silent mangling)
+
+--------------------------------------------------------------
+  CPU BENCHMARK
+--------------------------------------------------------------
+  [ OK ] integer ALU determinism check (repeat-run checksum match)
+@BEGIN integer
+@END integer us=14166667
+  integer mix   : 20000000 iters in 14166667 us
+                  -> 1.4118 Mops/s, 34.00 cyc/iter, checksum f2c53d7b
+  [ OK ] integer checksum matches the cross-chip reference f2c53d7b
+@BEGIN divide
+@END divide us=78673998
+  divide (soft) : 5000000 iters in 78673998 us
+                  -> 0.0636 Mops/s, 755.27 cyc/iter, checksum dcefbeaa
+                  No hardware divider (RV32EC has no M extension): this is
+                  libgcc's software divide; constant multiplies are
+                  expanded to shifts/adds inline (no __mulsi3 call)
+
+  -- floating point: software only, this part has no FPU --
+@BEGIN float
+@END float us=32041668
+  float  (soft) : 2000000 iters in 32041668 us
+                  -> 0.0624 Mops/s, 769.00 cyc/iter, result bits 3fbd0900
+  [ OK ] float workload produced a sane result
+  No FPU, so the float row IS the software row: nothing to price it against.
+  Single core: no multi-core scaling to measure.
+
+--------------------------------------------------------------
+  MEMORY BENCHMARK (SRAM)
+--------------------------------------------------------------
+  Test region : 1200 of 2048 bytes of SRAM; the rest is .data/.bss and the
+                stack - state this code is itself running on top of.
+
+  SRAM write : 2400000 bytes in 100333 us -> 23.920 MB/s, 8.03 cyc/word
+  SRAM read  : 2400000 bytes in 100250 us -> 23.940 MB/s, 8.02 cyc/word (chk 9d07e4a0)
+  SRAM copy  : 1200000 bytes in 75666 us -> 15.859 MB/s, 12.11 cyc/word
+  [ OK ] SRAM copy buffer verify
+  [ OK ] SRAM pattern 'address' (0 mismatches)
+  [ OK ] SRAM pattern '~address' (0 mismatches)
+  [ OK ] SRAM pattern '0xAAAAAAAA' (0 mismatches)
+  [ OK ] SRAM pattern '0x55555555' (0 mismatches)
+  The write loop's constant multiply is expanded inline (no libgcc call), so
+  write and read are both memory-limited figures. The copy row is a
+  hand-written word loop, not a libc memcpy.
+
+--------------------------------------------------------------
+  FLASH BENCHMARK (read path)
+--------------------------------------------------------------
+  flash read : 262144 bytes in 13655 us -> 19.198 MB/s, 10.00 cyc/word (chk f7ca4370)
+  SRAM read  : 261600 bytes in 10927 us -> 23.939 MB/s, 8.02 cyc/word (chk ffffaad8)
+  -> a word read from flash costs 1.25x a word read from SRAM.
+  Both loops fetch instructions from flash too, so the flash row shares
+  the one flash port between data and instruction fetch.
+  [ OK ] flash read returned data
+  No flash cache/accelerator to switch: the only control is the
+  wait-state field (FLASH_ACTLR.LATENCY), which must be 1 at 48 MHz.
+
+--------------------------------------------------------------
+  FLASH SWEEP (page erase / program / verify / erase)
+--------------------------------------------------------------
+  Program image : 12800 bytes (0x3200), ends in page 200
+  Swept region  : pages 200..255 = 0x3200..0x3fff, 56 pages, 3584 bytes
+  [ OK ] sweep starts at the first 64-byte page fully past the program image
+  [ OK ] every swept word reads 0xFFFFFFFF after erase
+  [ OK ] verify 3584 bytes against the pattern (0 word mismatches)
+  erase   : 3584 bytes in 175165 us -> 20.46 KB/s (3128 us/page)
+  program : 3584 bytes in 161221 us -> 22.23 KB/s (2879 us/page)
+  [ OK ] FLASH_STATR: no write-protect error, BSY always cleared
+  [ OK ] cleanup erase: swept region restored to blank 0xFF
+  The CPU keeps executing from flash while the controller is busy
+  (fetches stall until BSY clears): no RAM-resident driver needed.
+
+--------------------------------------------------------------
+  SUMMARY
+--------------------------------------------------------------
+  RAM never touched by the stack : 356 bytes of 2048
+  [ OK ] SRAM headroom left over the whole run (canary intact)
+  ALL 20 CHECKS PASSED - CPU, SRAM, flash read and flash sweep verified.
+  CoreMark is a separate image (not run in this one).
+--------------------------------------------------------------
+
+SUITE_DONE failures=0 checks=20

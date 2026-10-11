@@ -1,0 +1,86 @@
+Found WCH Link
+WCH Programmer is LinkE version 2.18
+Detected CH32V003
+Flash Storage: 16 kB
+Part UUID: 9b-5f-ab-cd-05-17-bd-eb
+Part Type: 00-30-05-10
+Read protection: disabled
+Interface Setup
+Terminal started
+
+
+
+--------------------------------------------------------------
+  CH32V003 COREMARK (CoreMark image)
+--------------------------------------------------------------
+BENCH_START
+
+--------------------------------------------------------------
+  SYSTEM INFO
+--------------------------------------------------------------
+  Target     : CH32V003F4P6, 1 x RV32EC (no M ext: no hw mul/div, no FPU)
+  Console    : WCH-Link debug channel on SWIO (PD1)
+  Compiler   : GCC 12.2.0
+  sys clock  : 48000000 Hz (24 MHz HSI x2, PLL)   timer: 6000000 Hz (SysTick, HCLK/8)
+  Flash/SRAM : 16384 / 2048 bytes   UID (64-bit) 9b5fabcd 0517bdeb
+  this image : 14460 bytes flash, 1256 bytes static SRAM
+  RCC_CTLR=03084e83 RCC_CFGR0=0000000a FLASH_ACTLR=00000001 SYSTICK_CTLR=00000001
+  [ OK ] RCC_CFGR0.SWS: system clock is the PLL
+  [ OK ] RCC_CTLR.PLLRDY set
+  [ OK ] FLASH_ACTLR.LATENCY = 1 wait state (needed above 24 MHz)
+  [ OK ] ESIG flash capacity reads 16 KB
+  printf check      : 123456789 89abcdef 007  (must read 123456789 89abcdef 007)
+  fixed-point check : 3.14159  (must read 3.14159)
+  [ OK ] printf format specifiers behave (no silent mangling)
+
+--------------------------------------------------------------
+  CPU BASELINE: CoreMark - REDUCED DATASET, SEE WARNING
+--------------------------------------------------------------
+  WARNING: this is NOT a conformant CoreMark score.
+  A conformant run needs a 2000-byte working set and this chip has 2048
+  bytes of SRAM in total. The conformant configuration needs 2056 bytes
+  of static SRAM before it has any stack at all: 8 bytes more than the
+  2048 the chip has;
+  CoreMark's own stack high-water is measured below.
+  What follows is the 1200-byte profile-run configuration. CoreMark still
+  validates it against its own known CRCs, so the arithmetic is proven
+  correct, but the dataset is smaller than the reporting rules require:
+  NOT comparable with published CoreMark 1.0 numbers or 2000-byte runs.
+
+  Running (self-calibrates to a >=10s measured run)...
+@BEGIN coremark
+Profile generation run parameters for coremark.
+CoreMark Size    : 400
+Total ticks      : 103575400
+Total time (secs): 17
+Iterations/Sec   : 117
+Iterations       : 2000
+Compiler version : WCH GCC 12.2.0
+Compiler flags   : -O2 -fno-builtin -fno-lto -msave-restore -march=rv32ecxw -mabi=ilp32e
+Memory location  : SRAM (static dataset, stack in same 2048 bytes)
+seedcrc          : 0x4eaf
+[0]crclist       : 0x6a79
+[0]crcmatrix     : 0x5608
+[0]crcstate      : 0xe5a4
+[0]crcfinal      : 0xf34a
+Correct operation validated. See README.md for run and reporting rules.
+@END coremark us=27004753
+
+  exact ticks      : 103575400 at 6000000 Hz = 17.263 s
+  iterations/sec   : 115.858 at 48.0 MHz (CoreMark's own line above truncates to whole seconds)
+  per MHz          : 2.4131  (reduced dataset - not a reportable CoreMark/MHz)
+  stack high-water : 392 bytes from the top of RAM (canary-measured)
+  conformant fit   : 2056 static + 392 stack = 2448 bytes needed vs 2048 available
+  [ OK ] CoreMark self-validated ("Correct operation validated")
+  [ OK ] CoreMark completed and reported a score
+  [ OK ] conformant 2000-byte run does not fit in 2048 bytes (measured)
+
+--------------------------------------------------------------
+  SUMMARY
+--------------------------------------------------------------
+  RAM never touched by the stack : 400 bytes of 2048
+  [ OK ] SRAM headroom left over the whole run (canary intact)
+  ALL 9 CHECKS PASSED.
+--------------------------------------------------------------
+
+SUITE_DONE failures=0 checks=9
